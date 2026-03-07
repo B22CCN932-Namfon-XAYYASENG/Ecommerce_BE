@@ -1,0 +1,73 @@
+package com.example.test.exception;
+
+import com.example.test.dto.response.ApiResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.nio.file.AccessDeniedException;
+import java.util.Objects;
+
+public class ExceptionHandler {
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(value = AppException.class)
+    ResponseEntity<ApiResponse<?>> handlingAppException(AppException e) {
+        ErrorApp errorApp = e.getErrorApp();
+
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .success(false)
+                .code(errorApp.getErrorCode().getCode())
+                .message(errorApp.getMessage())
+                .build();
+
+        return ResponseEntity.status(errorApp.getHttpStatusCode()).body(apiResponse);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(value = MethodArgumentNotValidException.class)
+    ResponseEntity<ApiResponse<?>> handlingMethodArgumentNotValidException(
+            MethodArgumentNotValidException exception){
+
+        String enumKey = Objects.requireNonNull(exception.getFieldError()).getDefaultMessage();
+
+        ErrorApp errorApp = ErrorApp.valueOf(enumKey);
+
+        ApiResponse<?> apiResponse =ApiResponse.builder()
+                .success(false)
+                .code(errorApp.getErrorCode().getCode())
+                .message(errorApp.getMessage())
+                .build();
+
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(value = AccessDeniedException.class)
+    ResponseEntity<ApiResponse<?>> handlingAccessDeniedException(AccessDeniedException exception) {
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .success(false)
+                .message(ErrorApp.ACCESS_DENIED.getMessage())
+                .build();
+
+        return ResponseEntity.status(ErrorApp.UNAUTHENTICATED.getHttpStatusCode()).body(apiResponse);
+    }
+
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(value = Exception.class)
+    ResponseEntity<ApiResponse<?>> handlingAppException(Exception e) {
+
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .success(false)
+                .message(e.getMessage())
+                .build();
+
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(value = IllegalAccessException.class)
+    ResponseEntity<ApiResponse<?>> handlingIllegalAccessException(IllegalAccessException exception) {
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .success(false)
+                .message(exception.getMessage())
+                .build();
+
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+}
