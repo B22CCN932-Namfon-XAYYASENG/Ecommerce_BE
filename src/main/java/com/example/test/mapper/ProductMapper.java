@@ -16,25 +16,29 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 
 @Mapper(componentModel = "spring")
-public interface ProductMapper {
+public abstract class ProductMapper {
+
+    @Value("${cloudinary.cloud-name}")
+    protected String cloudName;
 
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "brand", ignore = true)
 //    @Mapping(target = "imagesToDelete", ignore = true)
     @Mapping(target = "productDetails", expression = "java(buildJsonToString(request))")
 //    @Mapping(target = "images", expression = "java(mapImages(request.getNewImages(), product))")
-    Product toProduct(ProductRequest request);
+    public abstract Product toProduct(ProductRequest request);
 
     @Mapping(target = "productDetails", expression = "java(buildStringToJson(product))")
     @Mapping(target = "category", expression = "java(buildCategoryName(product))")
     @Mapping(target = "brand", expression = "java(buildBrandName(product))")
 //    @Mapping(target = "image", expression = "java(buildImageName(product))")
     @Mapping(target = "images", expression = "java(buildImageUrls(product))")
-    ProductResponse toProductResponse(Product product);
+    public abstract ProductResponse toProductResponse(Product product);
 
-    default String buildJsonToString(ProductRequest request) {
+    protected String buildJsonToString(ProductRequest request) {
         try {
             Map<String, Object> productDetail = request.getProductDetails();
 
@@ -44,7 +48,7 @@ public interface ProductMapper {
         }
     }
 
-    default JsonNode buildStringToJson(Product product) {
+    protected JsonNode buildStringToJson(Product product) {
         try {
             String productDetail = product.getProductDetails();
 
@@ -54,28 +58,34 @@ public interface ProductMapper {
         }
     }
 
-    default String buildCategoryName(Product product) {
+    protected String buildCategoryName(Product product) {
         return product.getCategory() != null
                 ? product.getCategory().getName()
                 : null;
     }
 
-    default String buildBrandName(Product product) {
+    protected String buildBrandName(Product product) {
         return product.getBrand() != null
                 ? product.getBrand().getName()
                 : null;
     }
 
 
-    default List<String> buildImageUrls(Product product) {
-        String baseUrl = "https://ecommerce-vinhseo.s3.ap-southeast-2.amazonaws.com/products/";
+    protected List<String> buildImageUrls(Product product) {
+        String baseUrl = "https://res.cloudinary.com/" + cloudName + "/image/upload/products/";
         return product.getImages().stream()
-                .map(image -> baseUrl + product.getId() + "/" + image.getUrl())
+                .map(image -> {
+                    String fileName = image.getUrl();
+                    if (fileName != null && fileName.contains(".")) {
+                        fileName = fileName.substring(0, fileName.lastIndexOf("."));
+                    }
+                    return baseUrl + product.getId() + "/" + fileName;
+                })
                 .collect(Collectors.toList());
     }
 
     @AfterMapping
-    default void mapImages(@MappingTarget Product product, ProductRequest request) {
+    protected void mapImages(@MappingTarget Product product, ProductRequest request) {
         List<MultipartFile> newImages = request.getNewImages();
         if (newImages != null && !newImages.isEmpty()) {
             List<ProductImage> productImages = newImages.stream().map(image -> {

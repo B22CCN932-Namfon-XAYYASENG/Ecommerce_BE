@@ -12,17 +12,21 @@ import org.mapstruct.Mapping;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 
 @Mapper(componentModel = "spring", uses = {CartItemMapper.class})
-public interface CartMapper {
+public abstract class CartMapper {
+
+    @Value("${cloudinary.cloud-name}")
+    protected String cloudName;
 
     @Mapping(target = "user", expression = "java(buildUser(cart))")
     @Mapping(target = "cartItemResponses", expression = "java(buildCartItemResponses(cart))")
     @Mapping(target = "cartSummary", expression = "java(buildCartSummary(cart))")
-    CartResponse toCartResponse(Cart cart);
+    public abstract CartResponse toCartResponse(Cart cart);
 
 
-    default JsonNode buildUser(Cart cart) {
+    protected JsonNode buildUser(Cart cart) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode user = mapper.createObjectNode();
 
@@ -32,11 +36,11 @@ public interface CartMapper {
         return user;
     }
 
-    default List<JsonNode> buildCartItemResponses(Cart cart) {
+    protected List<JsonNode> buildCartItemResponses(Cart cart) {
         ObjectMapper mapper = new ObjectMapper();
         List<JsonNode> cartItemResponses = new ArrayList<>();
 
-        String baseUrl = "https://ecommerce-vinhseo.s3.ap-southeast-2.amazonaws.com/products/";
+        String baseUrl = "https://res.cloudinary.com/" + cloudName + "/image/upload/products/";
 
         List<CartItem> cartItems = cart.getCartItems();
 
@@ -47,7 +51,13 @@ public interface CartMapper {
             node.put("name", cartItem.getProduct().getName());
 
             List<String> imageUrls = cartItem.getProduct().getImages().stream()
-                    .map(image ->baseUrl + image.getProduct().getId() + "/" + image.getUrl())
+                    .map(image -> {
+                        String fileName = image.getUrl();
+                        if (fileName != null && fileName.contains(".")) {
+                            fileName = fileName.substring(0, fileName.lastIndexOf("."));
+                        }
+                        return baseUrl + cartItem.getProduct().getId() + "/" + fileName;
+                    })
                     .collect(Collectors.toList());
             node.put("images", mapper.valueToTree(imageUrls));
 
@@ -63,7 +73,7 @@ public interface CartMapper {
         return cartItemResponses;
     }
 
-    default JsonNode buildCartSummary(Cart cart) {
+    protected JsonNode buildCartSummary(Cart cart) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode summary = mapper.createObjectNode();
 

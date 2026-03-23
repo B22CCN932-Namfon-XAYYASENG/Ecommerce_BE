@@ -26,7 +26,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-//    private final AwsS3Service awsS3Service;
+    private final CloudinaryService cloudinaryService;
     private final CategoryService categoryService;
     private final BrandService brandService;
     private final ProductImageRepository productImageRepository;
@@ -61,7 +61,7 @@ public class ProductService {
         String folder = "products/" + savedProduct.getId();
 
         for(MultipartFile imageProduct: imageProducts) {
-//            String imageUrl = awsS3Service.saveImageToS3(imageProduct, folder);
+            cloudinaryService.saveImageToCloudinary(imageProduct, folder);
 
             ProductImage productImage = new ProductImage();
             productImage.setUrl(imageProduct.getOriginalFilename());
@@ -218,7 +218,7 @@ public class ProductService {
                 ProductImage productImage = images.next();
 
                 if(request.getImagesToDelete().contains(productImage.getUrl())) {
-//                    awsS3Service.deleteImageFromS3(folder, productImage.getUrl());
+                    cloudinaryService.deleteImageFromCloudinary(folder, productImage.getUrl());
 
                     images.remove();
                     productImageRepository.delete(productImage);
@@ -230,7 +230,7 @@ public class ProductService {
         String folder = "products/" + id;
         if(newImages != null && !newImages.isEmpty()) {
             for(MultipartFile image: newImages) {
-//                String imageUrl = awsS3Service.saveImageToS3(image, folder);
+                cloudinaryService.saveImageToCloudinary(image, folder);
 
                 ProductImage productImage = new ProductImage();
                 productImage.setUrl(image.getOriginalFilename());
@@ -250,7 +250,7 @@ public class ProductService {
 
         String folder = "products/" + id;
 
-//        awsS3Service.deleteImageFromS3Folder(folder);
+        cloudinaryService.deleteImageFromCloudinaryFolder(folder);
 
         productRepository.deleteById(id);
     }

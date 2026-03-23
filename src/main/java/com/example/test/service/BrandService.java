@@ -21,7 +21,7 @@ import java.util.List;
 public class BrandService {
 
     private final BrandRepository brandRepository;
-//    private final AwsS3Service awsS3Service;
+    private final CloudinaryService cloudinaryService;
 
     @PreAuthorize("hasRole('ADMIN')")
     public Brand createBrand(BrandRequest request, MultipartFile logo) throws Exception {
@@ -36,7 +36,7 @@ public class BrandService {
 
         String folder = "brands/" + brand1.getId();
 
-//        awsS3Service.saveImageToS3(logo, folder);
+        cloudinaryService.saveImageToCloudinary(logo, folder);
 
         return brand1;
     }
@@ -85,11 +85,11 @@ public class BrandService {
         String folder = "brands/" + brandId;
 
         if(logo != null) {
-//            awsS3Service.deleteImageFromS3(folder, brand.getLogo());
+            cloudinaryService.deleteImageFromCloudinary(folder, brand.getLogo());
 
             brand.setLogo(logo.getOriginalFilename());
 
-//            awsS3Service.saveImageToS3(logo, folder);
+            cloudinaryService.saveImageToCloudinary(logo, folder);
         }
 
         return brandRepository.save(brand);
@@ -101,7 +101,7 @@ public class BrandService {
 
         String folder = "brands/" + brandId;
 
-//        awsS3Service.deleteImageFromS3(folder, brand.getLogo());
+        cloudinaryService.deleteImageFromCloudinary(folder, brand.getLogo());
 
         brandRepository.deleteById(brandId);
     }
