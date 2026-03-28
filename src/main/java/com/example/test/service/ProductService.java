@@ -210,14 +210,21 @@ public class ProductService {
         product1.setImages(new ArrayList<>(product.getImages()));
 
         // process delete image
-        if(request.getImagesToDelete() != null) {
+        if(request.getImagesToDelete() != null && !request.getImagesToDelete().isEmpty()) {
             String folder = "products/" + id;
 
             Iterator<ProductImage> images = product1.getImages().iterator();
             while(images.hasNext()) {
                 ProductImage productImage = images.next();
+                
+                String dbFileName = productImage.getUrl();
+                String dbFileNameWithoutExt = dbFileName != null && dbFileName.contains(".") 
+                    ? dbFileName.substring(0, dbFileName.lastIndexOf(".")) 
+                    : dbFileName;
 
-                if(request.getImagesToDelete().contains(productImage.getUrl())) {
+                if(request.getImagesToDelete().contains(dbFileName) || 
+                   request.getImagesToDelete().contains(dbFileNameWithoutExt)) {
+                   
                     cloudinaryService.deleteImageFromCloudinary(folder, productImage.getUrl());
 
                     images.remove();
