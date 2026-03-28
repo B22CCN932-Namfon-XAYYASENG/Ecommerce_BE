@@ -95,7 +95,7 @@ public class ZaloPayService {
 
         JSONObject embed_data = new JSONObject();
         embed_data.put("preferred_payment_method", new ArrayList<>());
-        embed_data.put("redirecturl", "http://localhost:3000/my-orders/pending"); // url return after payment
+        embed_data.put("redirecturl", "http://localhost:3001/my-orders/pending"); // url return after payment
 
         String callbackUrl = "https://9d7a-2405-4803-fe88-65c0-b146-e72f-4d18-761b.ngrok-free.app/api/v1"
                 + "/payment/zalo-pay/call-back";

@@ -39,7 +39,7 @@ public class VNPayController {
     public ResponseEntity<?> callBack(HttpServletRequest request, HttpServletResponse response) throws IOException {
         VNPayResponse vnPayResponse = vnPayService.orderReturn(request);
 
-        response.sendRedirect("http://localhost:3000/my-orders/pending");
+        response.sendRedirect("http://localhost:3001/my-orders/pending");
         return null;
     }
 
