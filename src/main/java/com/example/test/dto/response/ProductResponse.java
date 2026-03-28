@@ -43,5 +43,7 @@ public class ProductResponse {
     JsonNode productDetails;
 
     String category;
+    Integer categoryId;
     String brand;
+    Integer brandId;
 }

@@ -33,7 +33,9 @@ public abstract class ProductMapper {
 
     @Mapping(target = "productDetails", expression = "java(buildStringToJson(product))")
     @Mapping(target = "category", expression = "java(buildCategoryName(product))")
+    @Mapping(target = "categoryId", expression = "java(product.getCategory() != null ? product.getCategory().getId() : null)")
     @Mapping(target = "brand", expression = "java(buildBrandName(product))")
+    @Mapping(target = "brandId", expression = "java(product.getBrand() != null ? product.getBrand().getId() : null)")
 //    @Mapping(target = "image", expression = "java(buildImageName(product))")
     @Mapping(target = "images", expression = "java(buildImageUrls(product))")
     public abstract ProductResponse toProductResponse(Product product);
