@@ -24,18 +24,28 @@ export default class ApiService {
 
     static isAdmin() {
         const token = localStorage.getItem("accessToken");
-        if(token) {
-            const decodedToken = jwtDecode(token);
-            return decodedToken.scope === "ADMIN";
+        if(token && token !== 'undefined' && token !== 'null') {
+            try {
+                const decodedToken = jwtDecode(token);
+                return decodedToken.scope === "ADMIN";
+            } catch(e) {
+                localStorage.removeItem("accessToken");
+                return false;
+            }
         }
         return false;
     }
 
     static isUser() {
         const token = localStorage.getItem("accessToken");
-        if(token) {
-            const decodedToken = jwtDecode(token);
-            return decodedToken.scope === "USER";
+        if(token && token !== 'undefined' && token !== 'null') {
+            try {
+                const decodedToken = jwtDecode(token);
+                return decodedToken.scope === "USER";
+            } catch(e) {
+                localStorage.removeItem("accessToken");
+                return false;
+            }
         }
 
         return false;
